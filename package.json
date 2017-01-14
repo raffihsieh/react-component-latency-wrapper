@@ -1,0 +1,27 @@
+{
+  "name": "react-component-latency-wrapper",
+  "version": "1.0.0",
+  "description": "Wrapper around React.Component that measures component render times.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raffihsieh/react-component-latency-wrapper.git"
+  },
+  "author": "Raphael Hsieh <raffihsieh@gmail.com> (https://github.com/raffihsieh)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/raffihsieh/react-component-latency-wrapper/issues"
+  },
+  "homepage": "https://github.com/raffihsieh/react-component-latency-wrapper#readme",
+  "dependencies": {
+    "babel-loader": "^6.2.10",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-react": "^6.16.0",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "webpack": "^1.14.0"
+  }
+}
