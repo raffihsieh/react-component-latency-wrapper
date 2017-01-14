@@ -2,7 +2,7 @@ import React from 'react';
 import logLevelHierarchy from './logLevelHierarchy';
 import latencyCollector from './LatencyCollector';
 
-class LatencyComponent extends React.Component {
+class LatencyWrapper extends React.Component {
 
 	constructor(props, metricLabel = this.constructor.name + '_render_latency', 
 			logLevel = 'off', analyticsCallback = this.defaultAnalyticsCallback) {
@@ -33,5 +33,5 @@ class LatencyComponent extends React.Component {
 
 }
 
-exports.Component = LatencyComponent;
+exports.Component = LatencyWrapper;
 exports.Collector = latencyCollector;
