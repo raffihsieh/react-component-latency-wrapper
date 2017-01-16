@@ -5,7 +5,6 @@ class LatencyWrapper extends React.Component {
 
 	constructor(props, metricLabel,	logLevel = 'off', analyticsCallback = null) {
 		super(props);
-		console.log(metricLabel);
 		let label = metricLabel;
 		if(!label) {
 			label = this.constructor.name + '_render_latency';

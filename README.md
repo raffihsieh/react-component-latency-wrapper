@@ -1,46 +1,74 @@
 # react-latency-collector
 Wrapper around React.Component that measures component render times. 
 
-This is built on top of Eric Bidelman's (@ebidel) appmetrics.js found here: https://github.com/ebidel/appmetrics.js
+This is highly influenced by Eric Bidelman's (@ebidel) appmetrics.js which can be found here: https://github.com/ebidel/appmetrics.js
 
 ## Install
 npm install --save react-latency-collector
 
 ## How to Use
+
+The react-latency-collector component will automatically measure render time and output the results to either the console and/or to whatever data store you define. 
+It is meant to be used as a replacement for react.Component so you don't need to set up a new latency collector for every single one of your components. 
+Use this exactly as you would react.Component
+
 ```js
 import React from 'react';
 import LatencyWrapper from 'react-latency-collector';
 
 class App extends LatencyWrapper.Component {
   constructor(props) {
-    super(props, <METRIC LABEL>, <LOG LEVEL>, <ANALYTICS CALLBACK>);
+    super(props, <OPTIONAL METRIC LABEL>, <OPTIONAL LOG LEVEL>, <OPTIONAL ANALYTICS PUBLISHER>);
   }
   ...
 }
 export default App;
 ```
 
-Alternatively, you can use the latency collector itself instead of extending the wrapper component
+Alternatively, you can use the latency collector itself without the wrapper component.
 
 ```js
 import React from 'react';
-import latencyCollector from 'react-latency-collector';
+import LatencyCollector from 'react-latency-collector'.Collector;
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-  }
-  render() {
-    this.latencyCollector = new latencyCollector(<METRIC LABEL>);
+    this.latencyCollector = new LatencyCollector(<METRIC LABEL>, <LOG LEVEL>);
     this.latencyCollector.start();
-    ...
+  }
+  
+  componentDidMount() {
     this.latencyCollector.end();
     this.latencyCollector.log();
+    this.latencyCollector.publishMetrics(<METRIC PUBLISHING CALLBACK>);
+  }
+  
+  componentWillUpdate() {
+    ...
+  }
+  
+  componentDidUpdate() {
+    ...
   }
 }
 ```
 
-## Reporting Metrics
-In order to report metrics, you can provide a callback to the LatencyComponent constructor. 
-If a callback is specified, the wrapper will invoked the callback with the arguments 
-```callback(metricLabel, metricDuration)```
+### Optional Constructor Arguments
+
+#### Metric Label
+The default metric label is "<component className>_render_latency".
+
+#### Log Level
+The log level hierarchy is as follows:
+1. debug
+2. warn
+3. error
+4. off
+
+#### Analytics Publisher
+You can provide a callback for the react-latency-collector to call. The callback must accept 2 arguments
+1. The Metric Label
+2. The Latency value (ms)
+
+
