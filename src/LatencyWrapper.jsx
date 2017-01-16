@@ -1,21 +1,26 @@
 import React from 'react';
-import logLevelHierarchy from './logLevelHierarchy';
-import latencyCollector from './LatencyCollector';
+import LatencyCollector from './LatencyCollector';
 
 class LatencyWrapper extends React.Component {
 
-	constructor(props, metricLabel = this.constructor.name + '_render_latency', 
-			logLevel = 'off', analyticsCallback = this.defaultAnalyticsCallback) {
+	constructor(props, metricLabel,	logLevel = 'off', analyticsCallback = null) {
 		super(props);
-		this.logLevel = logLevel;
-		this.analyticsCallback = analyticsCallback.bind(this);
-		this.componentCollector = new latencyCollector.collector(metricLabel, logLevelHierarchy[logLevel]);
+		console.log(metricLabel);
+		let label = metricLabel;
+		if(!label) {
+			label = this.constructor.name + '_render_latency';
+		}
+		this.analyticsCallback = analyticsCallback;
+		this.componentCollector = new LatencyCollector(label, logLevel);
 		this.componentCollector.start();
 	}
 
 	componentDidMount() {
 		this.componentCollector.end();
 		this.componentCollector.log();
+		if (this.analyticsCallback) {
+			this.componentCollector.publishMetrics(this.analyticsCallback);
+		}
 	}
 
 	componentWillUpdate() {
@@ -25,13 +30,12 @@ class LatencyWrapper extends React.Component {
 	componentDidUpdate() {
 		this.componentCollector.end();
 		this.componentCollector.log();
-	}
-
-	defaultAnalyticsCallback(metricLabel, metricData) {
-		console.log("test for callback: " + metricLabel + ": " + metricData)
+		if (this.analyticsCallback) {
+			this.componentCollector.publishMetrics(this.analyticsCallback);
+		}
 	}
 
 }
 
 exports.Component = LatencyWrapper;
-exports.Collector = latencyCollector;
+exports.Collector = LatencyCollector;

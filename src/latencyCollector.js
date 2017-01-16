@@ -6,13 +6,69 @@
 
 'use strict';
 
-import logLevelHierarchy from './logLevelHierarchy';
-
 // Private members.
 let _start = new WeakMap();
 let _end = new WeakMap();
 
+const logLevelHierarchy = {
+	'debug' : 3,
+	'warn'  : 2,
+	'error' : 1,
+	'off'   : 0
+}
+
 class LatencyCollector {
+  /**
+   * @param {string} name A name for the metric.
+   */
+	constructor(name, logLevel = 'off') {
+		this.logLevel = logLevelHierarchy[logLevel];
+    if (!name) {
+      throw Error('Please provide a metric label');
+    }
+
+		if (!LatencyCollector.supportsPerfMark) {
+			if(this.logLevel >= logLevelHierarchy.warn) {
+				console.warn(`Timeline won't be marked for "${name}".`);
+			}
+
+      if (!LatencyCollector.supportsPerfNow) {
+        throw Error('This library cannot be used in this browser.');
+      }
+    }
+
+    this.name = name;
+  }
+
+  /**
+   * Returns the duration of the timing metric or -1 if there a measurement has
+   * not been made.
+   * @type {number}
+   */
+  get duration() {
+    let duration = _end.get(this) - _start.get(this);
+
+    // Use User Timing API results if available, otherwise return
+    // performance.now() fallback.
+    if (LatencyCollector.supportsPerfMark) {
+      // Note: this assumes the user has made only one measurement for the given
+      // name. Return the first one found.
+      const entry = performance.getEntriesByName(this.name)[0];
+      if (entry && entry.entryType !== 'measure') {
+        duration = entry.duration;
+      }
+    }
+
+    return duration || -1;
+  }
+
+	getLabel() {
+		return this.name;
+	}
+
+	getDuration() {
+		return this.duration;
+	}
 
   /**
    * True if the the browser supports the Navigation Timing API.
@@ -33,48 +89,24 @@ class LatencyCollector {
   }
 
   /**
-   * Returns the duration of the timing metric or -1 if there a measurement has
-   * not been made.
-   * @type {number}
+   * Prints the metric's duration to the console.
+   * @return {Metric} Instance of this object.
    */
-  get duration() {
-    let duration = _end.get(this) - _start.get(this);
+	log() {
+		console.log(logLevelHierarchy.debug);
+		if (this.logLevel >= logLevelHierarchy.debug) {
+			console.log(this.name, this.duration, 'ms');
+		}
+    return this;
+	}
 
-    // Use User Timing API results if available, otherwise return
-    // performance.now() fallback.
-    if (Metric.supportsPerfMark) {
-      // Note: this assumes the user has made only one measurement for the given
-      // name. Return the first one found.
-      const entry = performance.getEntriesByName(this.name)[0];
-      if (entry && entry.entryType !== 'measure') {
-        duration = entry.duration;
-      }
-    }
-
-    return duration || -1;
-  }
-
-  /**
-   * @param {string} name A name for the metric.
-   */
-	constructor(name, logLevel = 0) {
-		this.logLevel = logLevel;
-    if (!name) {
-      throw Error('Please provide a metric name');
-    }
-
-		if (!Metric.supportsPerfMark) {
-			if(this.logLevel >= logLevelHierarchy.warn) {
-				console.warn(`Timeline won't be marked for "${name}".`);
-			}
-
-      if (!Metric.supportsPerfNow) {
-        throw Error('This library cannot be used in this browser.');
-      }
-    }
-
-    this.name = name;
-  }
+	publishMetrics(analyticsCallback) {
+		try {
+			analyticsCallback(this.name, this.duration);
+		} catch (e) {
+			console.error('Publishing metrics failed.', e)
+		}
+	}
 
   /**
    * Call to begin a measurement.
@@ -88,7 +120,7 @@ class LatencyCollector {
     _start.set(this, performance.now());
 
     // Support: developer.mozilla.org/en-US/docs/Web/API/Performance/mark
-    if (Metric.supportsPerfMark) {
+    if (LatencyCollector.supportsPerfMark) {
       performance.mark(`mark_${this.name}_start`);
     }
 
@@ -107,7 +139,7 @@ class LatencyCollector {
     _end.set(this, performance.now());
 
     // Support: developer.mozilla.org/en-US/docs/Web/API/Performance/mark
-    if (Metric.supportsPerfMark) {
+    if (LatencyCollector.supportsPerfMark) {
       let startMark = `mark_${this.name}_start`;
       let endMark = `mark_${this.name}_end`;
       performance.mark(endMark);
@@ -117,17 +149,6 @@ class LatencyCollector {
     return this;
   }
 
-  /**
-   * Prints the metric's duration to the console.
-   * @return {Metric} Instance of this object.
-   */
-	log() {
-		if (this.logLevel >= logLevelHierarchy.debug) {
-			console.log(this.name, this.duration, 'ms');
-		}
-    return this;
-  }
-
 }
 
-module.export = LatencyCollector;
+module.exports = LatencyCollector;
