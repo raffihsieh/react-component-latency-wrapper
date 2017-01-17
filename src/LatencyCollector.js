@@ -93,7 +93,6 @@ class LatencyCollector {
    * @return {Metric} Instance of this object.
    */
 	log() {
-		console.log(logLevelHierarchy.debug);
 		if (this.logLevel >= logLevelHierarchy.debug) {
 			console.log(this.name, this.duration, 'ms');
 		}
