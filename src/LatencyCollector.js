@@ -53,7 +53,7 @@ class LatencyCollector {
     if (LatencyCollector.supportsPerfMark) {
       // Note: this assumes the user has made only one measurement for the given
       // name. Return the first one found.
-      const entry = performance.getEntriesByName(this.name)[0];
+      const entry = window.performance.getEntriesByName(this.name)[0];
       if (entry && entry.entryType !== 'measure') {
         duration = entry.duration;
       }
@@ -76,7 +76,7 @@ class LatencyCollector {
    * @static
    */
   static get supportsPerfNow() {
-    return performance && performance.now;
+    return window.performance && window.performance.now;
   }
 
   /**
@@ -85,7 +85,7 @@ class LatencyCollector {
    * @static
    */
   static get supportsPerfMark() {
-    return performance && performance.mark;
+    return window.performance && window.performance.mark;
   }
 
   /**
@@ -116,11 +116,11 @@ class LatencyCollector {
       console.warn('Overwriting previous value...');
     }
 
-    _start.set(this, performance.now());
+    _start.set(this, window.performance.now());
 
     // Support: developer.mozilla.org/en-US/docs/Web/API/Performance/mark
     if (LatencyCollector.supportsPerfMark) {
-      performance.mark(`mark_${this.name}_start`);
+      window.performance.mark(`mark_${this.name}_start`);
     }
 
     return this;
@@ -135,14 +135,14 @@ class LatencyCollector {
       console.warn('Overwriting previous value...');
     }
 
-    _end.set(this, performance.now());
+    _end.set(this, window.performance.now());
 
     // Support: developer.mozilla.org/en-US/docs/Web/API/Performance/mark
     if (LatencyCollector.supportsPerfMark) {
       let startMark = `mark_${this.name}_start`;
       let endMark = `mark_${this.name}_end`;
-      performance.mark(endMark);
-      performance.measure(this.name, startMark, endMark);
+      window.performance.mark(endMark);
+      window.performance.measure(this.name, startMark, endMark);
     }
 
     return this;
