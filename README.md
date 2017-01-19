@@ -71,4 +71,5 @@ You can provide a callback for the react-latency-collector to call. The callback
 1. The Metric Label
 2. The Latency value (ms)
 
-
+## Gotcha's
+The LatencyWrapper component makes use of the Component lifecycle methods. If you are using your own lifecycle methods, it will override these. Instead of using inheritence, it may be better to use composition.
